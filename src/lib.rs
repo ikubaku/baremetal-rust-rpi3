@@ -4,7 +4,7 @@ use core::intrinsics::volatile_store;
 use core::panic::PanicInfo;
 
 #[no_mangle]
-pub extern fn main() {
+pub extern "C" fn main() {
     // GPIOSEL1
     let gpfsel1 = 0x3F200004 as *mut u32;
     // GPSET0
@@ -14,8 +14,8 @@ pub extern fn main() {
 
     // set GPIO17 to OUTPUT
     unsafe {
-        volatile_store(gpfsel1, *(gpfsel1) & !(((0x07 as u32) << (7*3 as u32))));
-        volatile_store(gpfsel1, *(gpfsel1) | ((0x01 as u32) << (7*3 as u32)));
+        volatile_store(gpfsel1, *(gpfsel1) & !((0x07 as u32) << (7 * 3 as u32)));
+        volatile_store(gpfsel1, *(gpfsel1) | ((0x01 as u32) << (7 * 3 as u32)));
     }
 
     loop {
@@ -23,10 +23,12 @@ pub extern fn main() {
         unsafe {
             volatile_store(gpset0, 1 << 17 as u32);
         }
-        
+
         // busy wait
         for _ in 1..1000000 {
-            unsafe { asm!(""); }
+            unsafe {
+                asm!("");
+            }
         }
 
         // GPCLR0: set GPIO17 to LOW
@@ -36,13 +38,15 @@ pub extern fn main() {
 
         // busy wait
         for _ in 1..1000000 {
-            unsafe { asm!(""); }
+            unsafe {
+                asm!("");
+            }
         }
     }
 }
 
 #[lang = "eh_personality"]
-extern fn eh_personality() {}
+extern "C" fn eh_personality() {}
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
