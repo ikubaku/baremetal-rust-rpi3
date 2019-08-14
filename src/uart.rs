@@ -126,6 +126,12 @@ pub fn write_data(data: u8) {
     }
 }
 
+pub fn write_bytes(data: &[u8]) {
+    for b in data {
+        write_data(*b);
+    }
+}
+
 pub fn read_data() -> u8 {
     let uart_dr_data = (UART_BASE_ADDR + 0x00) as *mut u8;
 

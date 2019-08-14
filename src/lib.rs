@@ -9,6 +9,8 @@ pub mod uart;
 
 #[no_mangle]
 pub extern "C" fn main() {
+    let mut led_flag = false;
+
     // set GPIO17 as Out(LED)
     gpio::set_port_function(17, &PortFunction::Output);
     gpio::set_port(17);
@@ -21,13 +23,24 @@ pub extern "C" fn main() {
     uart::set_baudrate(115200);
 
     loop {
-        for c in "Hello, world!\r\n".as_bytes() {
+        for c in "Press L to flip LED state\r\n".as_bytes() {
             uart::write_data(*c);
         }
-        for _i in 0..1000000 {
-            unsafe {
-                asm!("");
+        loop {
+            let input = uart::read_data();
+
+            if input == 0x4C {
+                led_flag = !led_flag;
+                break;
             }
+        }
+
+        if led_flag {
+            gpio::set_port(17);
+            uart::write_bytes("LED ON\r\n".as_bytes());
+        } else {
+            gpio::reset_port(17);
+            uart::write_bytes("LED OFF\r\n".as_bytes());
         }
     }
 }
