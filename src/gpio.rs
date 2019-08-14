@@ -5,6 +5,10 @@ use crate::common;
 
 const GPIO_BASE_ADDR: u32 = common::PERIF_BASE_ADDR + 0x00200000;
 
+const GPIO_FSEL_ADDR: u32 = GPIO_BASE_ADDR + 0x00;
+const GPIO_SET_ADDR: u32 = GPIO_BASE_ADDR + 0x1C;
+const GPIO_CLR_ADDR: u32 = GPIO_BASE_ADDR + 0x28;
+
 pub enum PortFunction {
     Input,
     Output,
@@ -17,15 +21,15 @@ pub enum PortFunction {
 }
 
 fn get_gpfsel_reg_mut(port: u32) -> *mut u32 {
-    return (GPIO_BASE_ADDR + 0x00 + 4 * (port / 10)) as *mut u32;
+    return (GPIO_FSEL_ADDR + 4 * (port / 10)) as *mut u32;
 }
 
 fn get_gpset_reg_mut(port: u32) -> *mut u32 {
-    return (GPIO_BASE_ADDR + 0x1C + 4 * (port / 32)) as *mut u32;
+    return (GPIO_SET_ADDR + 4 * (port / 32)) as *mut u32;
 }
 
 fn get_gpclr_reg_mut(port: u32) -> *mut u32 {
-    return (GPIO_BASE_ADDR + 0x28 + 4 * (port / 32)) as *mut u32;
+    return (GPIO_CLR_ADDR + 4 * (port / 32)) as *mut u32;
 }
 
 fn get_fsel_lsb(port: u32) -> u32 {
