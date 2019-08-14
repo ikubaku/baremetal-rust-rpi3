@@ -1,5 +1,5 @@
 [package]
-name = "blink-rust"
+name = "baremetal-rust"
 version = "0.1.0"
 authors = ["ikubaku <hide4d51@gmail.com>"]
 edition = "2018"
