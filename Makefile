@@ -8,7 +8,7 @@ CARGO=cargo
 
 RUST_SRCS=src/lib.rs
 RUST_BUILT_BINARY_PATH=target/$(TARGET_TRIPLE)/debug
-RUST_BUILT_BINARY_NAME=libblink_rust.a
+RUST_BUILT_BINARY_NAME=libbaremetal_rust.a
 STARTCODE=start/start.S
 LDSCRIPT=start/ldscript.ld
 
