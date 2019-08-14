@@ -1,8 +1,9 @@
 //#![no_std]
 use core::intrinsics::volatile_store;
 
-const PERIF_BASE_ADDR: u32 = 0x3F000000;
-const GPIO_BASE_ADDR: u32 = PERIF_BASE_ADDR + 0x00200000;
+use crate::common;
+
+const GPIO_BASE_ADDR: u32 = common::PERIF_BASE_ADDR + 0x00200000;
 
 pub enum PortFunction {
     Input,
