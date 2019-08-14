@@ -39,12 +39,30 @@ fn wait_for_data() {
     }
 }
 
+fn is_rx_empty() -> bool {
+    let uart_fr = unsafe { volatile_load((UART_BASE_ADDR + 0x18) as *mut u32) };
+    if uart_fr & 0x00000010 == 0 {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 fn wait_for_peer() {
     loop {
         let uart_fr = unsafe { volatile_load((UART_BASE_ADDR + 0x18) as *mut u32) };
         if uart_fr & 0x00000020 == 0 {
             break;
         }
+    }
+}
+
+fn is_tx_full() -> bool {
+    let uart_fr = unsafe { volatile_load((UART_BASE_ADDR + 0x18) as *mut u32) };
+    if uart_fr & 0x00000020 == 0 {
+        return false;
+    } else {
+        return true;
     }
 }
 
@@ -91,6 +109,7 @@ pub fn init() {
         volatile_store(uart_cr, 0x00000300);
     }
 
+    enable_fifo();
     enable();
 }
 
@@ -119,7 +138,7 @@ pub fn set_baudrate(rate: u32) {
 pub fn write_data(data: u8) {
     let uart_dr_data = (UART_BASE_ADDR + 0x00) as *mut u8;
 
-    wait_for_peer();
+    while is_tx_full() {};
 
     unsafe {
         volatile_store(uart_dr_data, data);
@@ -135,7 +154,7 @@ pub fn write_bytes(data: &[u8]) {
 pub fn read_data() -> u8 {
     let uart_dr_data = (UART_BASE_ADDR + 0x00) as *mut u8;
 
-    wait_for_data();
+    while is_rx_empty() {};
 
     return unsafe { volatile_load(uart_dr_data) }
 }
