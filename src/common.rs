@@ -1,4 +1,5 @@
 //#![no_std]
+//#![feature(asm)]
 
 pub const PERIF_BASE_ADDR: u32 = 0x3F000000;
 
@@ -26,5 +27,11 @@ pub fn clear_bit(value: u32, n: u32) -> u32 {
         return value;
     } else {
         return value & !(1 << n);
+    }
+}
+
+pub fn halt() {
+    unsafe {
+        asm!("wfe");
     }
 }
