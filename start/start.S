@@ -13,6 +13,9 @@ _start:
 	// clear bss
 	bl bss_clear
 
+	// set EL2 interrupt vector table
+	bl set_vector_table
+
 	// start main program
 	bl main
 
@@ -32,6 +35,11 @@ bss_clear:
 2:
 	ret
 
+set_vector_table:
+	ldr x1, =vector_table_el2
+	msr VBAR_EL2, x1
+	ret
+	
 finish:
 	// halt
 	wfe

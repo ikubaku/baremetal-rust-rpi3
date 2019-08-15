@@ -2,6 +2,9 @@
 
 pub const PERIF_BASE_ADDR: u32 = 0x3F000000;
 
+// BCM2836 local peripheral
+pub const BCM2836_LP_BASE_ADDR: u32 = 0x40000000;
+
 pub fn test_bit(value: u32, n: u32) -> bool {
     if n > 31 {
         return false;

@@ -9,6 +9,8 @@ pub mod uart;
 
 pub mod common;
 
+pub mod interrupt;
+
 const PORT_TXD: u32 = 14;
 const PORT_RXD: u32 = 15;
 const PORT_LED: u32 = 17;
@@ -31,6 +33,10 @@ pub extern "C" fn main() {
 
     uart::write_bytes("Press L to toggle LED\r\n".as_bytes());
 
+    unsafe {
+        asm!("svc #0");
+    }
+
     // main loop
     loop {
         loop {
@@ -51,6 +57,20 @@ pub extern "C" fn main() {
         }
     }
 }
+
+#[no_mangle]
+pub extern "C" fn current_el_spx_sync_el2_handler() {
+    uart::write_bytes("Sync Exception thrown!!".as_bytes());
+}
+
+#[no_mangle]
+pub extern "C" fn current_el_spx_irq_el2_handler() {}
+
+#[no_mangle]
+pub extern "C" fn current_el_spx_fiq_el2_handler() {}
+
+#[no_mangle]
+pub extern "C" fn current_el_spx_serror_el2_handler() {}
 
 #[lang = "eh_personality"]
 extern "C" fn eh_personality() {}
