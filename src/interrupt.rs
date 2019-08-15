@@ -4,7 +4,7 @@ use core::intrinsics::{volatile_store, volatile_load};
 
 use crate::common;
 
-const INTERRUPT_BASE_ADDR: u32 = common::PERIF_BASE_ADDR + 0x00008000;
+const INTERRUPT_BASE_ADDR: u32 = common::PERIF_BASE_ADDR + 0x0000B000;
 
 const IRQ_1_PENDING_ADDR: u32 = INTERRUPT_BASE_ADDR + 0x204;
 const IRQ_1_ENABLE_ADDR: u32 = INTERRUPT_BASE_ADDR + 0x210;
@@ -18,7 +18,7 @@ const FIQ_CTRL_ADDR: u32 = INTERRUPT_BASE_ADDR + 0x20C;
 const GPU_INTERRUPT_ROUTING_ADDR: u32 = common::BCM2836_LP_BASE_ADDR + 0x0C;
 
 
-pub fn enable_irq(irq: u32) {
+pub fn bcm2835_enable_irq(irq: u32) {
     if irq < 32 {
         let irq_enable = IRQ_1_ENABLE_ADDR as *mut u32;
 
@@ -34,7 +34,7 @@ pub fn enable_irq(irq: u32) {
     }
 }
 
-pub fn disable_irq(irq: u32) {
+pub fn bcm2835_disable_irq(irq: u32) {
     if irq < 32 {
         let irq_disable = IRQ_1_DISABLE_ADDR as *mut u32;
 
@@ -65,7 +65,20 @@ pub fn init() {
         volatile_store(irq_1_disable, 0xFFFFFFFF);
         volatile_store(irq_2_disable, 0xFFFFFFFF);
 
+        // route IRQs to EL2
+        let mut hcl_el2: u32;
+        asm!("mrs $0, HCR_EL2" : "=r"(hcl_el2));
+        hcl_el2 |= 1 << 4;
+        asm!("msr HCR_EL2, $0" : : "r"(hcl_el2));
+
         // route GPU IRQ & FIQ to Core 0
         volatile_store(gpu_int_routing, 0x00000000);
+    }
+}
+
+pub fn enable_irq() {
+    unsafe {
+        // unmask IRQ
+        asm!("msr DAIFClr, #2");
     }
 }
