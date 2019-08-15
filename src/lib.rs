@@ -17,7 +17,12 @@ const PORT_LED: u32 = 17;
 
 #[no_mangle]
 pub extern "C" fn main() {
-    let mut led_flag = false;
+    // initialize interrupts
+    interrupt::init();
+    interrupt::bcm2835_enable_irq(57);
+
+    uart::init_interrupt();    // UART
+    uart::enable_rx_interrupt();
 
     // set GPIO17 as Out(LED)
     gpio::set_port_function(PORT_LED, &PortFunction::Output);
@@ -31,40 +36,44 @@ pub extern "C" fn main() {
     uart::init();
     uart::set_baudrate(115200);
 
-    uart::write_bytes("Press L to toggle LED\r\n".as_bytes());
+    // unmask IRQ
+    interrupt::enable_irq();
 
-    unsafe {
-        asm!("svc #0");
-    }
+    uart::write_bytes("Init complete\r\n".as_bytes());
 
     // main loop
     loop {
-        loop {
-            let input = uart::read_data();
+        gpio::reset_port(PORT_LED);
 
-            if input == 0x4C {
-                led_flag = !led_flag;
-                break;
+        for _i in 0..1000000 {
+            unsafe {
+                asm!("");
             }
         }
 
-        if led_flag {
-            gpio::set_port(PORT_LED);
-            uart::write_bytes("LED ON\r\n".as_bytes());
-        } else {
-            gpio::reset_port(PORT_LED);
-            uart::write_bytes("LED OFF\r\n".as_bytes());
+        gpio::set_port(PORT_LED);
+
+        for _i in 0..1000000 {
+            unsafe {
+                asm!("");
+            }
         }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn current_el_spx_sync_el2_handler() {
-    uart::write_bytes("Sync Exception thrown!!".as_bytes());
-}
+pub extern "C" fn current_el_spx_sync_el2_handler() {}
 
 #[no_mangle]
-pub extern "C" fn current_el_spx_irq_el2_handler() {}
+pub extern "C" fn current_el_spx_irq_el2_handler() {
+    //uart::write_bytes("IRQ!!\r\n".as_bytes());
+    if uart::is_receive_masked_interrupt() {
+        while let Some(b) = uart::read_data_nonblock() {
+            uart::write_data(b);
+        }
+        uart::clear_receive_masked_interrupt();
+    }
+}
 
 #[no_mangle]
 pub extern "C" fn current_el_spx_fiq_el2_handler() {}

@@ -11,6 +11,9 @@ const UART_IBRD_ADDR: u32 = UART_BASE_ADDR + 0x24;
 const UART_FBRD_ADDR: u32 = UART_BASE_ADDR + 0x28;
 const UART_LCRH_ADDR: u32 = UART_BASE_ADDR + 0x2C;
 const UART_CR_ADDR: u32 = UART_BASE_ADDR + 0x30;
+const UART_IMSC_ADDR: u32 = UART_BASE_ADDR + 0x38;
+const UART_MIS_ADDR: u32 = UART_BASE_ADDR + 0x40;
+const UART_ICR_ADDR: u32 = UART_BASE_ADDR + 0x44;
 
 const UART_FREQ: u32 = 48_000_000;
 
@@ -145,4 +148,49 @@ pub fn read_data() -> u8 {
     while is_rx_empty() {};
 
     return unsafe { volatile_load(uart_dr_data) }
+}
+
+pub fn read_data_nonblock() -> Option<u8> {
+    let uart_dr_data = UART_DR_ADDR as *mut u8;
+
+    if is_rx_empty() {
+        return None;
+    } else {
+        return Some(unsafe { volatile_load(uart_dr_data) });
+    }
+}
+
+pub fn init_interrupt() {
+    let uart_imsc = UART_IMSC_ADDR as *mut u32;
+
+    // mask all UART interrupt
+    unsafe {
+        volatile_store(uart_imsc, 0x00000000);
+    }
+}
+
+pub fn enable_rx_interrupt() {
+    let uart_imsc = UART_IMSC_ADDR as *mut u32;
+
+    unsafe {
+        volatile_store(uart_imsc, common::set_bit(*uart_imsc, 4));
+    }
+}
+
+pub fn is_receive_masked_interrupt() -> bool {
+    let uart_mis_val = unsafe { volatile_load(UART_MIS_ADDR as *mut u32) };
+
+    if common::test_bit(uart_mis_val, 4) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+pub fn clear_receive_masked_interrupt() {
+    let uart_icr = UART_ICR_ADDR as *mut u32;
+
+    unsafe {
+        volatile_store(uart_icr, common::set_bit(*uart_icr, 4));
+    }
 }
