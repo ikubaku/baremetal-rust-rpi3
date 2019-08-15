@@ -6,7 +6,7 @@ MEMORY
 {
 	/* Raspberry Pi has 1GiB(0x40000000) RAM */
 	/* entry point is 0x80000 */
-	RAM(xrw) : ORIGIN = 0x800000, LENGTH = (0x40000000 - 0x800000)
+	RAM(xrw) : ORIGIN = 0x80000, LENGTH = (0x40000000 - 0x80000)
 }
 
 SECTIONS
