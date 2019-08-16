@@ -1,0 +1,31 @@
+= baremetal-rust-rpi3
+
+Baremetal development with Raspberry Pi 3 ans Rust
+
+== Prerequisite
+
+=== hardware
+* Raspberry Pi 3
+
+=== software
+* rust nightly
+* make
+* binutils(aarch64-none-elf)
+* Raspberry Pi firmwares
+
+== Build
+. Clone this project
+. `cd` to the repository and `make`
+. Copy `build/kernel.bin` to the boot partition of SD card
+. Add following lines to config.txt
+
+[source, txt]
+----
+arm_64bit=1
+kernel=kernel.bin
+dtoverlay=pi3-miniuart-bt
+init_uart_clock=48000000
+----
+
+== License
+See LICENSE
